@@ -1,0 +1,26 @@
+Explanation of Changes:
+1. Canvas Initialization:
+ - Set both c.width and c.height to match the video size initially and on window resize.
+ - Added updateCanvasSize function to handle this.
+2. Green Screen Removal Logic:
+ - Fine-tuned the condition to better identify green pixels by checking if r < 100 && g > 100 && b < 100. This should be adjusted based on the exact green screen shade you are working with.
+
+3.Animation Frame:
+ - requestAnimationFrame is now correctly used inside the drawVid function to continuously update the canvas.
+ - Added a check to stop the loop if the video is paused or ended.
+
+4. Responsive Canvas:
+ -Added an event listener for window resize to update the canvas size accordingly.
+
+How It Works:
+ - When the video plays, the drawVid function is called using requestAnimationFrame.
+ - The current frame of the video is drawn onto the canvas.
+ - The pixel data is processed to set the alpha (transparency) of green pixels to 0.
+ - The modified image data is put back onto the canvas.
+ - requestAnimationFrame is called again to continue the loop, ensuring smooth updates to the canvas as the video plays.
+
+
+
+
+
+

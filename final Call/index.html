@@ -1,43 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CreePird</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Screen Video Processor</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
-    <body>
-        <video id="video" src="./assets/sample video.mp4" width="800" autoplay muted loop></video>
-        <canvas id="output-canvas" width="800" height="450"></canvas>
-        <script>
-            let video, c_out, c_temp, ctx_out, ctx_temp;
+        .box {
+            position: relative;
+            width: 700px;
+        }
 
-            function init() {
-                video = document.getElementById("video");
-                c_out = document.getElementById('output-canvas');
-                ctx_out = c_out.getContext("2d");
+        .box canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 2;
+        }
 
-                c_temp = document.createElement("canvas");
-                c_temp.setAttribute("width", 800);
-                c_temp.setAttribute("height", 450 );
+        video {
+            outline: none;
+            position: relative;
+            z-index: 1;
+        }
 
-                ctx_temp = c_temp.getContext("2d");
+        input {
+            margin: 20px;
+        }
+    </style>
+</head>
 
-                video.addEventListener("play", computeFrame)
+<body>
+    <input type="file" name="" accept="video/*" id="uploaded-video">
+
+    <div class="box">
+        <canvas width="700"></canvas>
+        <video class="vid" autoplay controls muted style="display:none;"></video>
+    </div>
+    <button type="button" id="download-btn">Download</button>
+
+    <script>
+        const video = document.querySelector('.vid');
+       
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+        const downloadBtn = document.querySelector('#download-btn');
+
+        const canvasStream = canvas.captureStream(60); // Capture at 60 FPS
+        const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm;codecs=vp9' });
+        const recordedChunks = [];
+
+        // Ensure the canvas matches the video size
+        const updateCanvasSize = () => {
+            canvas.width = video.videoWidth || 700;
+            canvas.height = video.videoHeight || 394;
+        };
+
+        document.querySelector('#uploaded-video').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                video.src = url;
+                video.style.display = 'block';
+                video.addEventListener('loadedmetadata', updateCanvasSize, { once: true });
+            }
+        });
+
+      
+
+        video.addEventListener('play', () => {
+            requestAnimationFrame(drawVid);
+            mediaRecorder.start();
+        });
+
+        function drawVid() {
+            if (video.paused || video.ended) {
+                return;
             }
 
-            function computeFrame() {
-                ctx_temp.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-                let frame = ctx_temp.getImageData(0, 0, video.videoWidth, video.videoHeight);
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                ctx_out.putImageData(frame, 0, 0)
+            // Draw the current video frame onto the canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Get the image data from the canvas
+            let frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let data = frame.data;
+
+            // Process the image data to remove the green background
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+
+                // Adjust the condition to better identify green pixels
+                if (r < 100 && g > 100 && b < 100) {
+                    data[i + 3] = 0; // Set alpha to 0 (fully transparent)
+                }
             }
 
-            document.addEventListener("DOMContentLoaded", () => {
-                init();
-            })
-        </script>
-    </body>
+            // Put the processed image data back onto the canvas
+            ctx.putImageData(frame, 0, 0);
+
+            // Request the next frame
+            requestAnimationFrame(drawVid);
+        }
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = () => {
+            const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+            const videoUrl = URL.createObjectURL(videoBlob);
+
+            // Create a temporary anchor element to download the video
+            const downloadLink = document.createElement('a');
+            downloadLink.href = videoUrl;
+            downloadLink.download = 'output_video.webm';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            // Reset the recordedChunks array
+            recordedChunks.length = 0;
+        };
+
+        downloadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            mediaRecorder.stop();
+        });
+
+        window.addEventListener('resize', updateCanvasSize);
+    </script>
+</body>
 
 </html>
