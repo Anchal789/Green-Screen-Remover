@@ -1,250 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Green Screen Video Processor</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-    }
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Screen Video Processor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
 
-    body {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
 
-    main {
-      flex: 1;
-      width: 100%;
-    }
+      main {
+        flex: 1;
+        width: 100%;
+      }
 
-    .box {
-      position: relative;
-    }
+      .box {
+        position: relative;
+      }
 
-    .box canvas {
-      width: 100vw;
-      height: 100%;
-      left: 0;
-      top: 0;
-      z-index: 2;
-      display: none;
-    }
+      .box canvas {
+        width: 100vw;
+        height: 100%;
+        left: 0;
+        top: 0;
+        z-index: 2;
+        display: none;
+      }
 
-    .vid {
-      outline: none;
-      display: none;
-      position: relative;
-      z-index: 1;
-      width: 100vw;
-    }
+      .vid {
+        outline: none;
+        display: none;
+        position: relative;
+        z-index: 1;
+        width: 100vw;
+      }
 
-    .uploaded-video {
-      display: none;
-    }
+      .uploaded-video {
+        display: none;
+      }
 
-    .download-section {
-      display: none;
-    }
-  </style>
-</head>
+      .download-section {
+        display: none;
+      }
 
-<body>
-  <!-- v0 by Vercel. https://v0.dev/t/cnc6kTfimZo -->
-  <main class="flex flex-col">
-    <section class="bg-[#F5F5F5] py-20 md:py-32">
-      <div class="container mx-auto px-4 md:px-6">
-        <div class="space-y-8 text-center">
-          <div class="space-y-4">
-            <h1 class="text-3xl md:text-4xl font-bold">Upload Your Video</h1>
-            <p class="text-[#7D8C9E] text-lg md:text-xl">
-              Start the process of removing your green screen by uploading your video.
-            </p>
-          </div>
-          <div class="max-w-md mx-auto space-y-4">
-            <div class="flex items-center justify-center w-full">
-              <label for="dropzone-file"
-                class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="w-10 h-10 mb-3 text-gray-400">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" x2="12" y1="3" y2="15"></line>
-                  </svg>
-                  <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span class="font-semibold">Click to upload</span> or drag and drop
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">MP4 or WebM or ogg</p>
-                  <input id="dropzone-file" type="file" accept="video/*" class="uploaded-video hidden" />
-                </div>
-              </label>
+      .owner-name {
+        font-size: x-large;
+        font-weight: bold;
+        margin-left: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="flex flex-col">
+      <!-- Upload Section -->
+      <section class="bg-[#F5F5F5] py-20 md:py-32">
+        <div class="container mx-auto px-4 md:px-6">
+          <div class="space-y-8 text-center">
+            <div class="space-y-4">
+              <h1 class="text-3xl md:text-4xl font-bold">Upload Your Video</h1>
+              <p class="text-[#7D8C9E] text-lg md:text-xl">
+                Start the process of removing your green screen by uploading your video.
+              </p>
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    <div class="box">
-      <video class="vid" autoplay muted></video>
-      <canvas></canvas>
-    </div>
-    <section class="bg-[#F5F5F5] py-20 md:py-32 download-section">
-      <div class="container mx-auto px-4 md:px-6">
-        <div class="space-y-8 text-center">
-          <div class="space-y-4">
-            <h1 class="text-3xl md:text-4xl font-bold">Download Your Video</h1>
-            <p class="text-[#7D8C9E] text-lg md:text-xl">
-              Your video is ready to download with the green screen removed.
-            </p>
-          </div>
-          <div class="max-w-md mx-auto space-y-4">
-            <div class="flex items-center justify-center w-full">
-              <div class="relative w-full">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="w-5 h-5 text-gray-500 dark:text-gray-400">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" x2="12" y1="15" y2="3"></line>
-                  </svg>
-                </div>
-                <input
-                  class="h-10 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-[#FF6B6B] focus:border-[#FF6B6B] dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-[#FF6B6B] dark:focus:border-[#FF6B6B]"
-                  placeholder="Your video is ready to download" disabled="" type="text" />
+            <div class="max-w-md mx-auto space-y-4">
+              <div class="flex items-center justify-center w-full">
+                <label for="dropzone-file"
+                  class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                  <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="w-10 h-10 mb-3 text-gray-400">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" x2="12" y1="3" y2="15"></line>
+                    </svg>
+                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span class="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">MP4 or WebM or ogg</p>
+                    <input id="dropzone-file" type="file" accept="video/*" class="uploaded-video hidden" />
+                  </div>
+                </label>
               </div>
             </div>
-            <button id="download-btn" type="button"
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full bg-[#FF6B6B] text-white hover:bg-[#E74C3C]">
-              Download Video
-            </button>
           </div>
         </div>
+      </section>
+      <!-- Canvas Section -->
+      <div class="box">
+        <video class="vid" autoplay muted></video>
+        <canvas></canvas>
       </div>
-    </section>
-  </main>
-  <footer class="bg-[#2C3E50] text-white py-8 md:py-12 w-full mt-auto">
-    <div class="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
-      <div class="space-y-2">
-        <h3 class="text-xl font-bold">Acme Green Screen Removal</h3>
-        <p>© 2024 Acme Inc. All rights reserved.</p>
+      <!-- Download Section -->
+      <section class="bg-[#F5F5F5] py-20 md:py-32 download-section">
+        <div class="container mx-auto px-4 md:px-6">
+          <div class="space-y-8 text-center">
+            <div class="space-y-4">
+              <h1 class="text-3xl md:text-4xl font-bold">Download Your Video</h1>
+              <p class="text-[#7D8C9E] text-lg md:text-xl">
+                Your video is ready to download with the green screen removed.
+              </p>
+            </div>
+            <div class="max-w-md mx-auto space-y-4">
+              <div class="flex items-center justify-center w-full">
+                <div class="relative w-full">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="w-5 h-5 text-gray-500 dark:text-gray-400">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" x2="12" y1="15" y2="3"></line>
+                    </svg>
+                  </div>
+                  <input
+                    class="h-10 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-[#FF6B6B] focus:border-[#FF6B6B] dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-[#FF6B6B] dark:focus:border-[#FF6B6B]"
+                    placeholder="Your video is ready to download" disabled="" type="text" />
+                </div>
+              </div>
+              <button id="download-btn" type="button"
+                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full bg-[#FF6B6B] text-white hover:bg-[#E74C3C]">
+                Download Video
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-[#2C3E50] text-white py-8 md:py-12">
+      <div class="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
+        <div class="space-y-2">
+          <h3 class="text-xl font-bold">Acme Green Screen Removal</h3>
+          <p>Designed By
+            <a href="https://github.com/Anchal789" target="_blank" class="owner-name">Anchal
+              Deshmukh</a>
+          </p>
+        </div>
+        <div class="space-x-4 mt-4 md:mt-0">
+          <a class="hover:underline" href="#" rel="ugc">
+            Terms of Service
+          </a>
+          <a class="hover:underline" href="#" rel="ugc">
+            Privacy Policy
+          </a>
+          <a class="hover:underline" href="#" rel="ugc">
+            Contact Us
+          </a>
+        </div>
       </div>
-      <div class="space-x-4 mt-4 md:mt-0">
-        <a class="hover:underline" href="#">
-          Terms of Service
-        </a>
-        <a class="hover:underline" href="#">
-          Privacy Policy
-        </a>
-        <a class="hover:underline" href="#">
-          Contact Us
-        </a>
-      </div>
-    </div>
-  </footer>
+    </footer>
 
-  <script>
-    const video = document.querySelector('.vid');
-    const canvas = document.querySelector('canvas');
-    const ctx = canvas.getContext('2d');
-    const downloadBtn = document.querySelector('#download-btn');
+    <script>
+      const video = document.querySelector('.vid');
+      const canvas = document.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+      const downloadBtn = document.querySelector('#download-btn');
 
-    let mediaRecorder;
-    const recordedChunks = [];
+      let mediaRecorder;
+      const recordedChunks = [];
 
-    const updateCanvasSize = () => {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-    };
+      const updateCanvasSize = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      };
 
-    document.querySelector('.uploaded-video').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const url = URL.createObjectURL(file);
-        video.src = url;
-        video.style.display = 'block';
-        canvas.style.display = 'block';
-        video.addEventListener('loadedmetadata', () => {
-          updateCanvasSize();
-          const canvasStream = canvas.captureStream(60); // Capture at 60 FPS
-          mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm;codecs=vp9' });
-          mediaRecorder.ondataavailable = (event) => {
-            if (event.data && event.data.size > 0) {
-              recordedChunks.push(event.data);
-            }
-          };
+      document.querySelector('.uploaded-video').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          video.src = url;
+          video.style.display = 'block';
+          canvas.style.display = 'block';
+          video.addEventListener('loadedmetadata', () => {
+            updateCanvasSize();
+            const canvasStream = canvas.captureStream(60); // Capture at 60 FPS
+            mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm;codecs=vp9' });
+            mediaRecorder.ondataavailable = (event) => {
+              if (event.data && event.data.size > 0) {
+                recordedChunks.push(event.data);
+              }
+            };
 
-          mediaRecorder.onstop = () => {
-            const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-            const videoUrl = URL.createObjectURL(videoBlob);
+            mediaRecorder.onstop = () => {
+              const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+              const videoUrl = URL.createObjectURL(videoBlob);
 
-            // Create a temporary anchor element to download the video
-            const downloadLink = document.createElement('a');
-            downloadLink.href = videoUrl;
-            downloadLink.download = 'output_video.webm';
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
+              // Create a temporary anchor element to download the video
+              const downloadLink = document.createElement('a');
+              downloadLink.href = videoUrl;
+              downloadLink.download = 'output_video.webm';
+              document.body.appendChild(downloadLink);
+              downloadLink.click();
+              document.body.removeChild(downloadLink);
 
-            // Reset the recordedChunks array
-            recordedChunks.length = 0;
-          };
+              // Reset the recordedChunks array
+              recordedChunks.length = 0;
+            };
 
-          // Start drawing and recording once the video is ready to play
-          video.addEventListener('play', () => {
-            mediaRecorder.start();
-            drawVid();
-          });
-        }, { once: true });
-      }
-    });
-
-    function drawVid() {
-      if (video.paused || video.ended) {
-        document.querySelector(".download-section").style.display = "block";
-        return;
-      }
-
-      // Clear the canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw the current video frame onto the canvas
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      // Get the image data from the canvas
-      let frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      let data = frame.data;
-
-      // Process the image data to remove the green background
-      for (let i = 0; i < data.length; i += 4) {
-        let r = data[i];
-        let g = data[i + 1];
-        let b = data[i + 2];
-
-        // Adjust the condition to better identify green pixels
-        if (r < 100 && g > 100 && b < 100) {
-          data[i + 3] = 0;
+            // Start drawing and recording once the video is ready to play
+            video.addEventListener('play', () => {
+              mediaRecorder.start();
+              drawVid();
+            });
+          }, { once: true });
         }
+      });
+
+      function drawVid() {
+        if (video.paused || video.ended) {
+          document.querySelector(".download-section").style.display = "block";
+          return;
+        }
+
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the current video frame onto the canvas
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Get the image data from the canvas
+        let frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let data = frame.data;
+
+        // Process the image data to remove the green background
+        for (let i = 0; i < data.length; i += 4) {
+          let r = data[i];
+          let g = data[i + 1];
+          let b = data[i + 2];
+
+          // Adjust the condition to better identify green pixels
+          if (r < 100 && g > 100 && b < 100) {
+            data[i + 3] = 0;
+          }
+        }
+
+        // Put the processed image data back onto the canvas
+        ctx.putImageData(frame, 0, 0);
+
+        // Request the next frame
+        requestAnimationFrame(drawVid);
       }
 
-      // Put the processed image data back onto the canvas
-      ctx.putImageData(frame, 0, 0);
-
-      // Request the next frame
-      requestAnimationFrame(drawVid);
-    }
-
-    downloadBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      mediaRecorder.stop();
-    });
-  </script>
-</body>
+      downloadBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        mediaRecorder.stop();
+      });
+    </script>
+  </body>
 
 </html>
