@@ -1,5 +1,16 @@
 {
   "devDependencies": {
     "tailwindcss": "^3.4.3"
-  }
+  },
+  "name": "green-screen-remover",
+  "description": "",
+  "version": "1.0.0",
+  "main": "script.js",
+
+  "scripts": {
+   "build" : "npx tailwindcss -i ./style.css -o ./dist/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
